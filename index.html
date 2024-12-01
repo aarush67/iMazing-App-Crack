@@ -3,15 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-4ZXXE8M8QZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-4ZXXE8M8QZ');
-</script>
     <title>Imazing Download</title>
     <style>
         body {
@@ -30,12 +21,10 @@
             box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
-        h1 {
+        h1, h2 {
             color: #333;
-            font-size: 28px;
-            margin-bottom: 20px;
         }
-        .steps {
+        .steps, .comments-section {
             margin-top: 20px;
             font-size: 16px;
             color: #333;
@@ -56,7 +45,7 @@
             background-color: #28a745;
             color: #fff;
         }
-        .license-section {
+        .license-section, .comments-section {
             margin-top: 30px;
             font-size: 16px;
             background-color: #f1f1f1;
@@ -66,32 +55,35 @@
             text-align: left;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
-        .license-section h2 {
-            margin-bottom: 15px;
-            font-size: 20px;
-            color: #333;
-        }
-        .license-key {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 16px;
-            background-color: #fff;
-            padding: 12px;
+        .comment-box {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #ccc;
-            word-wrap: break-word;
-            width: 100%;
-            margin-top: 10px;
+            font-size: 16px;
             box-sizing: border-box;
         }
-        .license-key::selection {
-            background-color: #28a745;
+        .submit-btn {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
             color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
         }
-        .license-key-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        .submit-btn:hover {
+            background-color: #0056b3;
+        }
+        .comment {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -110,20 +102,82 @@
         </ol>
     </div>
 
-    <!-- Link to Download the Imazing .dmg file from GitHub Releases -->
     <a class="download-link" href="https://github.com/aarush67/iMazing-App-Crack/releases/download/v1.0.0/iMazing.dmg" download>Download Imazing for macOS</a>
 
-    <!-- License Key Section -->
     <div class="license-section">
         <h2>License Key Instructions:</h2>
         <p>After installing Imazing, open the app and copy and paste the following key into the license field to activate the software:</p>
-        
-        <div class="license-key-container">
-            <textarea class="license-key" readonly>dfghielrfgjniqejfkniefjneirf</textarea>
-            <small>Copy this key and paste it into the license key field in the app.</small>
-        </div>
+        <textarea class="license-key" readonly>dfghielrfgjniqejfkniefjneirf</textarea>
+    </div>
+
+    <div class="comments-section">
+        <h2>Comments</h2>
+        <p>Make sure to comment if this helped you!</p>
+        <textarea id="comment-input" class="comment-box" placeholder="Write your comment here..."></textarea>
+        <button class="submit-btn" onclick="submitComment()">Submit Comment</button>
+        <div id="comments-container"></div>
     </div>
 </div>
+
+<!-- Firebase Scripts -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+<script>
+    // Firebase configuration
+    const firebaseConfig = {
+    apiKey: "AIzaSyC-0E0SnZa1xFIM9dmp1IKbF7YnAeJpZZI",
+    authDomain: "imazing-crack.firebaseapp.com",
+    projectId: "imazing-crack",
+    storageBucket: "imazing-crack.firebasestorage.app",
+    messagingSenderId: "870501638940",
+    appId: "1:870501638940:web:f2d6ddb131694c4bc290d9",
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Submit a comment to Firestore
+    async function submitComment() {
+        const commentInput = document.getElementById('comment-input');
+        const comment = commentInput.value.trim();
+        if (!comment) {
+            alert('Please write a comment before submitting.');
+            return;
+        }
+        try {
+            await db.collection('comments').add({
+                text: comment,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            commentInput.value = '';
+            fetchComments();
+        } catch (error) {
+            console.error('Error adding comment:', error);
+        }
+    }
+
+    // Fetch and display comments from Firestore
+    async function fetchComments() {
+        const commentsContainer = document.getElementById('comments-container');
+        commentsContainer.innerHTML = '';
+        try {
+            const querySnapshot = await db.collection('comments').orderBy('timestamp', 'desc').get();
+            querySnapshot.forEach(doc => {
+                const commentData = doc.data();
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment';
+                commentDiv.textContent = commentData.text;
+                commentsContainer.appendChild(commentDiv);
+            });
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+        }
+    }
+
+    // Fetch comments on page load
+    fetchComments();
+</script>
 
 </body>
 </html>
